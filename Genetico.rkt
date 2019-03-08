@@ -1,6 +1,6 @@
 ;; The first three lines of this file were inserted by DrRacket. They record metadata
 ;; about the language level of this file in a form that our tools can easily process.
-#reader(lib "htdp-advanced-reader.ss" "lang")((modname GeneticosPrimeraProgra) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+#reader(lib "htdp-advanced-reader.ss" "lang")((modname Genetico) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
 ;;Funcion de Aptitud--------------------------------------------------------------------------------------------------------
 (define (aptitud-eq equipo)
   (cond((null? equipo) equipo)
@@ -123,10 +123,10 @@
   
 ;;Inicializacion de la primera generacion----------------------------------------------------------------------------------------------------------
 (define (jugador tipo num)
-  (cond((equal? 1 tipo) (list (list 0 (+ 330 (random 180))) (list 0 0) (list 0 (random 11) (random 11) (random 11) (random 11)) 1 num ))
-       ((equal? 2 tipo) (list (list (+ 5 (random 230)) (+ 5 (random 510))) (list 0 0) (list 0 (random 11) (random 11) (random 11) (random 11)) 2 num ))
-       ((equal? 3 tipo) (list (list (random 612) (+ 5 (random 510))) (list 0 0) (list 0 (random 11) (random 11) (random 11) (random 11)) 3 num ))
-       (else (list (list (+ (random 306) 612) (+ 5 (random 510))) (list 0 0) (list 0 (random 11) (random 11) (random 11) (random 11)) 4 num ))))
+  (cond((equal? 1 tipo) (list (list 0 (+ 180 (random 180))) (list 0 0) (list 0 (random 11) (random 11) (random 11) (random 11)) 1 num ))
+       ((equal? 2 tipo) (list (list (+ 75 (random 90)) (+ 5 (random 510))) (list 0 0) (list 0 (random 11) (random 11) (random 11) (random 11)) 2 num ))
+       ((equal? 3 tipo) (list (list (+ 165 (random 90)) (+ 5 (random 510))) (list 0 0) (list 0 (random 11) (random 11) (random 11) (random 11)) 3 num ))
+       (else (list (list (+ 255 (random 90)) (+ 5 (random 510))) (list 0 0) (list 0 (random 11) (random 11) (random 11) (random 11)) 4 num ))))
 
 
 (define (inic-aux num formacion)
