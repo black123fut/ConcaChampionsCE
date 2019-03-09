@@ -1,46 +1,110 @@
 ;; The first three lines of this file were inserted by DrRacket. They record metadata
 ;; about the language level of this file in a form that our tools can easily process.
 #reader(lib "htdp-advanced-reader.ss" "lang")((modname Movimiento_Logica) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
-(define (eliminar elem lista)
-  (cond ((null? lista) '())
-        ((equal? elem (car lista))
-         (eliminar elem (cdr lista)))
+;;Agregar al codigo
+;Argumentos: Listas Equipo1 y Equipo2
+;Salida: Lista con ambos equipos y sus posiciones finales modificadas
+;Funcion principal para mover los 2 equipos, llama a su debida funcion de movimiento
+(define (mover jugadores jugadores_S)
+  (cond((or (null? jugadores) (null? jugadores)) '())
+       (else
+        (list (mover_jugadores jugadores '()) (mover_jugadores_S jugadores_S '())))))
+
+;Argumentos: La lista de jugadores y una lista vacia
+;Salida: Lista de jugadores con nueva posicion
+;Funcion que toma toda la lista de jugadores y crea una nueva lista con sus posiciones finales modificadas
+(define (mover_jugadores_S jugadores listaF)
+  (cond ((null? jugadores) listaF)
         (else
-         (cons (car lista) (eliminar elem (cdr lista))))))
+         (mover_jugadores_S (cdr jugadores) (append listaF (list (mover_a_bola_S (car jugadores) (bola) listaF)))))))
 
 
+;Argumentos: Jugador y Posicion Final
+;Salida: Llama a la funcion correspondiente
+;Compruba que tipo de jugador es, y que tipo de movimiento deberia realizar
+(define(comprobar_tipo_S jugador posXYf)
+  (cond((equal? (obtenerNumTipo jugador) 1) (moverPortero_S jugador posXYf))
+       ((equal? (obtenerNumTipo jugador) 2) (moverDefensa_S jugador posXYf))
+       ((equal? (obtenerNumTipo jugador) 3) (moverMedio_S jugador posXYf))
+       ((equal? (obtenerNumTipo jugador) 4) (moverDelantero_S jugador posXYf))))
+
+;Argumentos: Jugador y Posicion Final
+;Salida: Jugador con una nueva posicion final
+;Portero-Defensa-Delantero-Medios(Equipo 2)
+
+;Funcion que identifica si el portero se puede mover a dicha ubicacion, si no es el caso, genera una nueva ubicacion
+(define (moverPortero_S jugador posXYf)
+  (cond ((not (equal? (car posXYf) 895)) (moverPortero_S jugador (cons 895 (cdr posXYf))))
+        ((< (cadr posXYf) 180) (moverPortero_S jugador (list 895 180)))
+        ((> (cadr posXYf) 330) (moverPortero_S jugador (list 895 330)))
+        (else
+         (append (list (car jugador)) (list posXYf) (cddr jugador)))))
+
+
+;Funcion que identifica si el defensa se puede mover a dicha ubicacion, si no es el caso, genera una nueva ubicacion
+(define (moverDelantero_S jugador posXYf)
+  
+  (cond 
+    ((> (car posXYf) 230) (moverDelantero_S jugador (list 230 (cadr posXYf))))
+        (else
+         {append (list (car jugador)) (list posXYf) (cddr jugador)})))
+ ;Funcion que identifica si el Medio se puede mover a dicha ubicacion, si no es el caso, genera una nueva ubicacion
+(define (moverMedio_S jugador posXYf)
+  (cond ((< (car posXYf) 230) (moverMedio_S jugador (list 230 (cadr posXYf))))
+        ((> (car posXYf) 690) (moverMedio_S jugador (list 690 (cadr posXYf))))
+        (else
+         {append (list (car jugador)) (list posXYf) (cddr jugador)})))
+ ;Funcion que identifica si el delantero se puede mover a dicha ubicacion, si no es el caso, genera una nueva ubicacion
+(define (moverDefensa_S jugador posXYf)
+  (cond ((< (car posXYf) 690) (moverDefensa_S jugador (list 690 (cadr posXYf))) )
+        ((> (car posXYf) 900) (moverDefensa_S jugador (list 900 (cadr posXYf))))
+        (else
+         {append (list (car jugador)) (list posXYf) (cddr jugador)})))
+
+
+;Argumentos: Jugador, bola y lista Final
+;Salida: Tipo de movimiento a realizar o comprobar que tipo de jugador
+;;Comprueba si un jugador del equipo 2 se puede mover hacia el balon
+(define (mover_a_bola_S  jugador bola listaF)
+
+ (cond ((and (<= (abs (- (car(obtenerXY jugador)) (caar bola))) (* (obtenerAgilidad jugador) 15)) (<= (abs (- (cadr(obtenerXY jugador)) (cadar bola))) (* (obtenerAgilidad jugador) 15)) (comprobar_otro_jugador (car bola) listaF)) (comprobar_tipo_S jugador  (car bola)))
+        
+         ((equal? (obtenerNumTipo jugador) 1)
+          (moverPortero_S jugador (list 895 (+ (random 150) 180) )))
+         ((equal? (obtenerNumTipo jugador) 4)
+          (moverDelantero_S jugador (list  (+ (random 225) 5) (+ (random 505) 5) )))
+         
+         ((equal? (obtenerNumTipo jugador) 3)
+          (moverMedio_S jugador (list (+ (random 460) 230) (+ (random 505) 5) )))
+         ((equal? (obtenerNumTipo jugador) 2)
+          (moverDefensa_S jugador (list (+ (random 210) 690) (+ (random 505) 5) )))
+         
+         ))
+
+;Argumentos: La lista de jugadores y una lista vacia
+;Salida: Lista de jugadores con nueva posicion
+;Funcion que reliaza el movimento del equipo del lado izquierda
 (define (mover_jugadores jugadores listaF)
   (cond ((null? jugadores) listaF)
         (else
          (mover_jugadores (cdr jugadores) (append listaF (list (mover_a_bola (car jugadores) (bola) listaF)))))))
-;;creacion de los jugadores
-(define (jugador posXY posXYf estadisticas num-tipo numero)
-  (cond ((not(list? posXY)) #f)
-        
-        ((not (list? posXYf)) #f)
-        
-        ((not (list? estadisticas)) #f)
-        ((not (number? num-tipo)) #f)
-        ((not (number? numero)) #f)
-        (else
-         (list posXY posXYf estadisticas num-tipo numero))
-  ))
 
-
-;;Movimiento de jugadores
-;(define (mover_jugador jugador bola)
- ; (cond ((null? jugador) #F)
-  ;      (else
-   ;      (mover_a_bola  jugador bola))))
-
+;Argumentos: Jugador y Posicion Final
+;Salida: Llama a la funcion correspondiente
 ;Funcion que comprueba el tipo de jugador el cual se desea mover
-(define(comprobar_tipo jugador posXYf)
+(define(comprobar_tipo jugador posXYf )
+  
   (cond((equal? (obtenerNumTipo jugador) 1) (moverPortero jugador posXYf))
        ((equal? (obtenerNumTipo jugador) 2) (moverDefensa jugador posXYf))
        ((equal? (obtenerNumTipo jugador) 3) (moverMedio jugador posXYf))
-       ((equal? (obtenerNumTipo jugador) 4) ((moverDelantero jugador posXYf)))))
+       ((equal? (obtenerNumTipo jugador) 4) (moverDelantero jugador posXYf))))
+       
+ 
+;Argumentos: Jugador y Posicion Final
+;Salida: Jugador con una nueva posicion final
+;Portero-Defensa-Delantero-Medios(Equipo 1)
 
- ;Funcion que identifica si el portero se puede mover a dicha ubicacion, si no es el caso, genera una nueva ubicacion
+;Funcion que identifica si el portero se puede mover a dicha ubicacion, si no es el caso, genera una nueva ubicacion
 (define (moverPortero jugador posXYf)
   (cond ((not (equal? (car posXYf) 5)) (moverPortero jugador (cons 5(cdr posXYf))))
         ((< (cadr posXYf) 180) (moverPortero jugador (list 5 180)))
@@ -68,7 +132,11 @@
         (else
          {append (list (car jugador)) (list posXYf) (cddr jugador)})))
 
- ;Funcion que verifica si un jugador puede moverse directamente a la bola 
+
+
+;Argumentos: Jugador, bola y lista Final
+;Salida: Tipo de movimiento a realizar o comprobar que tipo de jugador
+;Funcion que verifica si un jugador puede moverse directamente a la bola 
 
 (define (mover_a_bola  jugador bola listaF)
 
@@ -77,44 +145,33 @@
          ((equal? (obtenerNumTipo jugador) 1)
           (moverPortero jugador (list 5 (+ (random 150) 180) )))
          ((equal? (obtenerNumTipo jugador) 2)
-          (moverDefensa jugador (list (+ (random 505) 5) (+ (random 225) 5) )))
+          (moverDefensa jugador (list  (+ (random 225) 5) (+ (random 505) 5) )))
          
          ((equal? (obtenerNumTipo jugador) 3)
-          (moverMedio jugador (list (+ (random 505) 5) (+ (random 460) 230) )))
+          (moverMedio jugador (list (+ (random 460) 230) (+ (random 505) 5) )))
          ((equal? (obtenerNumTipo jugador) 4)
-          (moverDelantero jugador (list (+ (random 505) 5) (+ (random 210) 690) )))
+          (moverDelantero jugador (list (+ (random 210) 690) (+ (random 505) 5) )))
          
          ))
-         
+
+;Argumentos: Posicion deseada y lista nueva de jugadores
+;Salida: #f si existe un jugador en esa posicion, #t si no hay ningun jugador en esa posicion
+;Comprueba el si existe otro jugador en la posicion ya selecionada         
 (define (comprobar_otro_jugador posXYf listaF)
+
+  
   (cond((null? listaF) #t)
        ((equal? (obtenerXYf (car listaF)) posXYf) #f)
        (else
-        (comprobar_otro_jugador posXYf (cdr listaF)))))
-;Funcion que comprueba que si un jugador ya se encuentra en esa posicion
-;(define (comprobar_pos jugador jugadores)
- ; (cond((null? jugadores) #t)
-  ;     (equal? (obtener
-   ;     ))).
-;;Pruebas de listas de jugadores
-
-
-(define (listajugadores  jugador1 jugador2 jugador3 jugador4 jugador5 jugador6 jugador7 jugador8 jugador9 jugador10 jugador11)
-  (list jugador1 jugador2 jugador3 jugador4 jugador5 jugador6 jugador7 jugador8 jugador9 jugador10 jugador11)
- )
-(define (bola)
-   '((200 30) 1 1))
-(define (jugadores)
-  (listajugadores (jugador '(100 30) '(200 6) '(8 5 3 4 1) 1 1)
-                  (jugador '(100 130) '(100 60) '(8 5 3 2 2) 2 2) (jugador '(150 60) '(100 60) '(8 5 3 2 5) 2 3) (jugador '(100 180) '(100 60) '(8 5 3 2 8) 2 4) (jugador '(100 60) '(100 60) '(8 5 3 2 10) 2 5)
-                  (jugador '(100 130) '(100 60) '(8 5 3 2 3) 3 6) (jugador '(100 60) '(199 11) '(8 5 3 2 6) 3 7) (jugador '(100 130) '(100 60) '(8 5 3 2 9) 3 8) (jugador '(100 60) '(100 60) '(8 5 3 2 11) 3 9)
-                  (jugador '(100 130) '(100 60) '(8 5 3 2 4) 4 10) (jugador '(100 180) '(100 60) '(8 5 3 2 7) 4 11))
- )
+        (begin
+          
+         (display posXYf)
+        (comprobar_otro_jugador posXYf (cdr listaF))))))
 
 
 
-;;FIn de las pruebas
-
+;Argumento: Jugador
+;Salida:Caracteristica especifica del jugador
 
 ;;Funciones para obtener datos de un jugador en especifico
 ;;Obtiene las posiciones iniciales X y Y
@@ -212,6 +269,45 @@
        (else
         (obtenerNum_aux (cdr jugador) (+ num 1)))))
 
+;;creacion de los jugadores
+(define (jugador posXY posXYf estadisticas num-tipo numero)
+  (cond ((not(list? posXY)) #f)
+        
+        ((not (list? posXYf)) #f)
+        
+        ((not (list? estadisticas)) #f)
+        ((not (number? num-tipo)) #f)
+        ((not (number? numero)) #f)
+        (else
+         (list posXY posXYf estadisticas num-tipo numero))
+  ))
+
+
+
+;-------------------------------------------------------------FINALIZA EL CODIGO
+
+;;Pruebas de listas de jugadores
+
+
+(define (listajugadores  jugador1 jugador2 jugador3 jugador4 jugador5 jugador6 jugador7 jugador8 jugador9 jugador10 jugador11)
+  (list jugador1 jugador2 jugador3 jugador4 jugador5 jugador6 jugador7 jugador8 jugador9 jugador10 jugador11)
+ )
+(define (bola)
+   '((457 150) 1 1))
+(define (jugadores)
+  (listajugadores (jugador '(100 30) '(200 6) '(8 5 3 4 1) 1 1)
+                  (jugador '(100 130) '(100 60) '(8 5 3 2 2) 2 2) (jugador '(150 60) '(100 60) '(8 5 3 2 5) 2 3) (jugador '(100 180) '(100 60) '(8 5 3 2 8) 2 4) (jugador '(100 60) '(100 60) '(8 5 3 2 10) 2 5)
+                  (jugador '(100 130) '(100 60) '(8 5 3 2 3) 3 6) (jugador '(100 60) '(199 11) '(8 5 3 2 6) 3 7) (jugador '(100 130) '(100 60) '(8 5 3 2 9) 3 8) (jugador '(100 60) '(100 60) '(8 5 3 2 11) 3 9)
+                  (jugador '(100 130) '(100 60) '(8 5 3 2 4) 4 10) (jugador '(100 180) '(100 60) '(8 5 3 2 7) 4 11))
+ )
+
+(define (jugadores2)
+  (listajugadores (jugador '(100 30) '(200 6) '(8 5 3 4 1) 1 12)
+                  (jugador '(100 130) '(100 60) '(8 5 3 2 2) 2 13) (jugador '(150 60) '(100 60) '(8 5 3 2 5) 2 14) (jugador '(100 180) '(100 60) '(8 5 3 2 8) 2 15) (jugador '(100 60) '(100 60) '(8 5 3 2 10) 2 16)
+                  (jugador '(100 130) '(100 60) '(8 5 3 2 3) 2 17) (jugador '(100 60) '(199 11) '(8 5 3 2 6) 3 18) (jugador '(100 130) '(100 60) '(8 5 3 2 9) 3 19) (jugador '(100 60) '(100 60) '(8 5 3 2 11) 3 20)
+                  (jugador '(100 130) '(100 60) '(8 5 3 2 4) 3 21) (jugador '(100 180) '(100 60) '(8 5 3 2 7) 4 22))
+ )
+
 (print "Jugador: ")
 
 (car(jugadores))
@@ -239,10 +335,11 @@
 ;(mover_jugador (car(jugadores)) (bola))
 
 (print "------JUGADORES----")
-(display (jugadores))
-(display (newline))
+(jugadores)
+
+ (jugadores2)
 (print "------Jugadores_Mover-------")
-(display (mover_jugadores (jugadores) '()))
+(mover (jugadores) (jugadores2))
 ;;(jugador 10 10 10 10 )
 ;;(jugador 1 10 10 10 )
 ;;(jugador '(10 60) 10 10 10 )
