@@ -67,7 +67,7 @@
 ;;Comprueba si un jugador del equipo 2 se puede mover hacia el balon
 (define (mover_a_bola_S  jugador listaF ball)
 
- (cond ((and (<= (abs (- (car(obtenerXY jugador)) (caar ball))) (* (obtenerAgilidad jugador) 15)) (<= (abs (- (cadr(obtenerXY jugador)) (cadar bola))) (* (obtenerAgilidad jugador) 15)) (comprobar_otro_jugador (car bola) listaF)) (comprobar_tipo_S jugador  (car bola)))
+ (cond ((and (<= (abs (- (car(obtenerXY jugador)) (caar ball))) (* (obtenerAgilidad jugador) 15)) (<= (abs (- (cadr(obtenerXY jugador)) (cadar ball))) (* (obtenerAgilidad jugador) 15)) (comprobar_otro_jugador (car ball) listaF)) (comprobar_tipo_S jugador  (car ball)))
         
          ((equal? (obtenerNumTipo jugador) 1)
           (moverPortero_S jugador (list 895 (+ (random 150) 180) )))
@@ -141,7 +141,7 @@
 (define (mover_a_bola  jugador listaF ball)
   
 
- (cond ((and (<= (abs (- (car(obtenerXY jugador)) (caar ball))) (* (obtenerAgilidad jugador) 15)) (<= (abs (- (cadr(obtenerXY jugador)) (cadar bola))) (* (obtenerAgilidad jugador) 15)) (comprobar_otro_jugador (car bola) listaF)) (comprobar_tipo jugador  (car ball)))
+ (cond ((and (<= (abs (- (car(obtenerXY jugador)) (caar ball))) (* (obtenerAgilidad jugador) 15)) (<= (abs (- (cadr(obtenerXY jugador)) (cadar ball))) (* (obtenerAgilidad jugador) 15)) (comprobar_otro_jugador (car ball) listaF)) (comprobar_tipo jugador  (car ball)))
         
          ((equal? (obtenerNumTipo jugador) 1)
           (moverPortero jugador (list 5 (+ (random 150) 180) )))
@@ -299,8 +299,7 @@
 (define (listajugadores  jugador1 jugador2 jugador3 jugador4 jugador5 jugador6 jugador7 jugador8 jugador9 jugador10 jugador11)
   (list jugador1 jugador2 jugador3 jugador4 jugador5 jugador6 jugador7 jugador8 jugador9 jugador10 jugador11)
  )
-(define (bola)
-   '((457 150) 1 1))
+
 (define (jugadores)
   (listajugadores (jugador '(100 30) '(200 6) '(8 5 10 4 1) 1 1)
                   (jugador '(100 130) '(100 60) '(8 5 3 2 2) 2 2) (jugador '(150 60) '(100 60) '(8 5 3 2 5) 2 3) (jugador '(100 180) '(100 60) '(8 5 3 2 8) 2 4) (jugador '(100 60) '(100 60) '(8 5 3 2 10) 2 5)
