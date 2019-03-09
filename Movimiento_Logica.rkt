@@ -5,18 +5,18 @@
 ;Argumentos: Listas Equipo1 y Equipo2
 ;Salida: Lista con ambos equipos y sus posiciones finales modificadas
 ;Funcion principal para mover los 2 equipos, llama a su debida funcion de movimiento
-(define (mover jugadores jugadores_S)
+(define (mover jugadores jugadores_S ball)
   (cond((or (null? jugadores) (null? jugadores)) '())
        (else
-        (list (mover_jugadores jugadores '()) (mover_jugadores_S jugadores_S '())))))
+        (list (mover_jugadores jugadores '() ball) (mover_jugadores_S jugadores_S '() ball)))))
 
 ;Argumentos: La lista de jugadores y una lista vacia
 ;Salida: Lista de jugadores con nueva posicion
 ;Funcion que toma toda la lista de jugadores y crea una nueva lista con sus posiciones finales modificadas
-(define (mover_jugadores_S jugadores listaF)
+(define (mover_jugadores_S jugadores listaF ball)
   (cond ((null? jugadores) listaF)
         (else
-         (mover_jugadores_S (cdr jugadores) (append listaF (list (mover_a_bola_S (car jugadores) (bola) listaF)))))))
+         (mover_jugadores_S (cdr jugadores) (append listaF (list (mover_a_bola_S (car jugadores) listaF  ball))) ball))))
 
 
 ;Argumentos: Jugador y Posicion Final
@@ -65,9 +65,9 @@
 ;Argumentos: Jugador, bola y lista Final
 ;Salida: Tipo de movimiento a realizar o comprobar que tipo de jugador
 ;;Comprueba si un jugador del equipo 2 se puede mover hacia el balon
-(define (mover_a_bola_S  jugador bola listaF)
+(define (mover_a_bola_S  jugador listaF ball)
 
- (cond ((and (<= (abs (- (car(obtenerXY jugador)) (caar bola))) (* (obtenerAgilidad jugador) 15)) (<= (abs (- (cadr(obtenerXY jugador)) (cadar bola))) (* (obtenerAgilidad jugador) 15)) (comprobar_otro_jugador (car bola) listaF)) (comprobar_tipo_S jugador  (car bola)))
+ (cond ((and (<= (abs (- (car(obtenerXY jugador)) (caar ball))) (* (obtenerAgilidad jugador) 15)) (<= (abs (- (cadr(obtenerXY jugador)) (cadar bola))) (* (obtenerAgilidad jugador) 15)) (comprobar_otro_jugador (car bola) listaF)) (comprobar_tipo_S jugador  (car bola)))
         
          ((equal? (obtenerNumTipo jugador) 1)
           (moverPortero_S jugador (list 895 (+ (random 150) 180) )))
@@ -84,10 +84,10 @@
 ;Argumentos: La lista de jugadores y una lista vacia
 ;Salida: Lista de jugadores con nueva posicion
 ;Funcion que reliaza el movimento del equipo del lado izquierda
-(define (mover_jugadores jugadores listaF)
+(define (mover_jugadores jugadores listaF ball)
   (cond ((null? jugadores) listaF)
         (else
-         (mover_jugadores (cdr jugadores) (append listaF (list (mover_a_bola (car jugadores) (bola) listaF)))))))
+         (mover_jugadores (cdr jugadores) (append listaF (list (mover_a_bola (car jugadores) listaF ball))) ball))))
 
 ;Argumentos: Jugador y Posicion Final
 ;Salida: Llama a la funcion correspondiente
@@ -138,9 +138,10 @@
 ;Salida: Tipo de movimiento a realizar o comprobar que tipo de jugador
 ;Funcion que verifica si un jugador puede moverse directamente a la bola 
 
-(define (mover_a_bola  jugador bola listaF)
+(define (mover_a_bola  jugador listaF ball)
+  
 
- (cond ((and (<= (abs (- (car(obtenerXY jugador)) (caar bola))) (* (obtenerAgilidad jugador) 15)) (<= (abs (- (cadr(obtenerXY jugador)) (cadar bola))) (* (obtenerAgilidad jugador) 15)) (comprobar_otro_jugador (car bola) listaF)) (comprobar_tipo jugador  (car bola)))
+ (cond ((and (<= (abs (- (car(obtenerXY jugador)) (caar ball))) (* (obtenerAgilidad jugador) 15)) (<= (abs (- (cadr(obtenerXY jugador)) (cadar bola))) (* (obtenerAgilidad jugador) 15)) (comprobar_otro_jugador (car bola) listaF)) (comprobar_tipo jugador  (car ball)))
         
          ((equal? (obtenerNumTipo jugador) 1)
           (moverPortero jugador (list 5 (+ (random 150) 180) )))
@@ -268,6 +269,12 @@
   (cond((equal? num 4) (car jugador))
        (else
         (obtenerNum_aux (cdr jugador) (+ num 1)))))
+;Obtiene el angulo para tirar segun su punteria
+(define (angulo jugador)
+  (cond ((null? jugador)
+         '())
+        (else
+         (* (* (obtenerPunteria jugador) (/ 9 10)) 10))))
 
 ;;creacion de los jugadores
 (define (jugador posXY posXYf estadisticas num-tipo numero)
@@ -295,7 +302,7 @@
 (define (bola)
    '((457 150) 1 1))
 (define (jugadores)
-  (listajugadores (jugador '(100 30) '(200 6) '(8 5 3 4 1) 1 1)
+  (listajugadores (jugador '(100 30) '(200 6) '(8 5 10 4 1) 1 1)
                   (jugador '(100 130) '(100 60) '(8 5 3 2 2) 2 2) (jugador '(150 60) '(100 60) '(8 5 3 2 5) 2 3) (jugador '(100 180) '(100 60) '(8 5 3 2 8) 2 4) (jugador '(100 60) '(100 60) '(8 5 3 2 10) 2 5)
                   (jugador '(100 130) '(100 60) '(8 5 3 2 3) 3 6) (jugador '(100 60) '(199 11) '(8 5 3 2 6) 3 7) (jugador '(100 130) '(100 60) '(8 5 3 2 9) 3 8) (jugador '(100 60) '(100 60) '(8 5 3 2 11) 3 9)
                   (jugador '(100 130) '(100 60) '(8 5 3 2 4) 4 10) (jugador '(100 180) '(100 60) '(8 5 3 2 7) 4 11))
@@ -308,38 +315,16 @@
                   (jugador '(100 130) '(100 60) '(8 5 3 2 4) 3 21) (jugador '(100 180) '(100 60) '(8 5 3 2 7) 4 22))
  )
 
-(print "Jugador: ")
 
-(car(jugadores))
-(print "Posiciones iniciales: ")
-(obtenerXY (car(jugadores)))
-(print "Posiciones Finales: ")
-(obtenerXYf (car(jugadores)))
-(print "Estadisticas")
-(obtenerEst (car(jugadores)))
-(print "Aptitud: ")
-(obtenerAptitud(car(jugadores)))
-(print "Fuerza: ")
-(obtenerFuerza(car(jugadores)))
-(print "Puneria/habilidad: ")
-(obtenerPunteria(car(jugadores)))
-(print "Velocidad: ")
-(obtenerVelocidad (car(jugadores)))
-(print "Agilidad:")
-(obtenerAgilidad (car(jugadores)))
-(print "Numero de Tipo:")
-(obtenerNumTipo (car(jugadores)))
-(print "Numero:")
-(obtenerNum (car(jugadores)))
-(print "mover que tipo jugador:")
-;(mover_jugador (car(jugadores)) (bola))
 
-(print "------JUGADORES----")
-(jugadores)
 
- (jugadores2)
-(print "------Jugadores_Mover-------")
-(mover (jugadores) (jugadores2))
+
+(mover (jugadores) (jugadores2)  '((457 150) 1 1))
+
+
+
+
+
 ;;(jugador 10 10 10 10 )
 ;;(jugador 1 10 10 10 )
 ;;(jugador '(10 60) 10 10 10 )
