@@ -1,6 +1,6 @@
 ;; The first three lines of this file were inserted by DrRacket. They record metadata
 ;; about the language level of this file in a form that our tools can easily process.
-#reader(lib "htdp-advanced-reader.ss" "lang")((modname ChampionsInterface) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #t #t none #f () #f)))
+#reader(lib "htdp-advanced-reader.ss" "lang")((modname ChampionsInterface) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
 (require graphics/graphics)
 (require 2htdp/image)
 (require racket/math)
@@ -9,9 +9,9 @@
 
 (define window (open-viewport "ConcaChampionsCE" 920 720))
 (define window2 (open-pixmap "ConcaChampionsCE" 920 720))
-(define players '(((340 150) (455 260) 20 1) ((300 100) (700 400) 16 2) ((700 400) (300 300) 10 3)  ))
+;;(define players '(((340 150) (455 260) 20 1) ((300 100) (700 400) 16 2) ((700 400) (300 300) 10 3)  ))
 ;;(posicionI), fuerza-distancia, angulo
-(define ball '((450 260) 0 45))
+(define firstBall '((450 260) 0 45))
 
 ;;(define linea (line 50 0 'red))
 ;;(define texto (text "2" 20 'white))
@@ -49,38 +49,43 @@
     )
   )
 
+(define (obtenerEquipo jugador)
+  (caddr (cdddr jugador)))
+
 (define (posX jugador)
-  (caar jugador))
+  (car (obtenerXY jugador)))
 
 (define (posY jugador)
-  (cadar jugador))
+  (cadr (obtenerXY jugador)))
 
 (define (destinoX jugador)
-  (caadr jugador))
+  (car (obtenerXYf jugador)))
 
 (define (destinoY jugador)
-  (car (cdadr jugador)))
+  (cadr (obtenerXYf jugador)))
 
 (define (terminoMovimiento jugador)
   (cons (list (destinoX jugador) (destinoY jugador)) (cdr jugador)))
 
 (define (hipotenusa jugador)
-  (sqrt (+ (expt (- (destinoX jugador) (posX jugador)) 2)
-          (expt (- (destinoY jugador) (posY jugador)) 2)))
-  )
+  (cond ((null? jugador) 0)
+        (else (sqrt (+ (expt (- (destinoX jugador) (posX jugador)) 2)
+          (expt (- (destinoY jugador) (posY jugador)) 2))))
+        ))
 
 (define (movimientoX jugadores step diagonal angulo)
-  (+ (posX (car jugadores)) (* step (cos (degrees->radians angulo))))
+  (cond ((null? jugadores) 0)
+        (else (+ (posX (car jugadores)) (* step (cos (degrees->radians angulo))))))
   )
 
 (define (movimientoY jugadores step diagonal angulo)
-  (+ (posY (car jugadores)) (* step (sin (degrees->radians angulo))))
+  (cond ((null? jugadores) 0)
+        (else (+ (posY (car jugadores)) (* step (sin (degrees->radians angulo))))))
   )
 
 (define (getNextPlayer jugadores)
-  (cond ((null? (cdr jugadores))
-         (car jugadores))
-        (else (cadr jugadores))
+  (cond ((null? jugadores) '())
+        (else (car jugadores))
         ))
 
 (define (pendiente jugador)
@@ -95,6 +100,7 @@
 
 (define (obtenerAngulo jugador)
   (cond
+    ((null? jugador) 0)
     ((and (< (car (obtenerAnguloAux jugador)) 0) (< (cadr (obtenerAnguloAux jugador)) 0))
      (- (radians->degrees (atan (pendiente jugador))) 180)
      )
@@ -105,15 +111,15 @@
     )
   )
 
-(define (fuerzaJugador jugador)
-  (caddr jugador)
-  )
+;(define (fuerzaJugador jugador)
+;  (caddr jugador)
+;  )
 
 (define (dibujarJugadores jugadores number)  
   (cond ((null? jugadores) #t)
         (else (begin
-                ((draw-solid-ellipse window2) (make-posn (posX (car jugadores)) (posY (car jugadores))) 30 30 "purple")
-                ((draw-string window2) (make-posn (+ (caaar jugadores) 13) (+ (cadar (car jugadores)) 15)) (number->string number) "white")
+                ((draw-solid-ellipse window2) (make-posn (posX (car jugadores)) (posY (car jugadores))) 30 30 (obtenerEquipo (car jugadores)))
+                ((draw-string window2) (make-posn (+ (caaar jugadores) 13) (+ (cadar (car jugadores)) 15)) (number->string (obtenerNum (car jugadores))) "white")
                 (dibujarJugadores (cdr jugadores) (+ 1 number))
                 ))
         )
@@ -124,7 +130,7 @@
         ((and (< (posX (car jugadores)) (+ (posX bola) 20)) (< (posY (car jugadores)) (+ (posY bola) 20))
               (> (+ (posX (car jugadores)) 30) (posX bola)) (> (+ (posY (car jugadores)) 30) (posY bola)))  
                                                         ;;Hay va el angulo del jugador
-         (list (car bola) (fuerzaJugador (car jugadores)) 50)
+         (list (car bola) (+ 10 (obtenerFuerza (car jugadores))) (anguloTiro (car jugadores)))
          )
         (else (interseccionAux (cdr jugadores) bola)) 
         )
@@ -134,24 +140,23 @@
 ;;x < maxX && y < maxY && x + w > minX && y + h > minY
 (define (interseccion jugador xm ym bola jugadores)
   (cond ((and (< xm (+ (posX bola) 20)) (< ym (+ (posY bola) 20)) (> (+ xm 30) (posX bola)) (> (+ ym 30) (posY bola)))
-         (begin
-           (display "intersecto") (newline)
-           (display (obtenerAngulo (list (car bola) (list 920 260)))) (newline)
-                                                  ;;Hay va el angulo del jugador 
-           (list (car bola) (fuerzaJugador jugador) 50)
-           ))
+                                                       ;;Hay va el angulo del jugador 
+         (list (car bola) (+ 10 (obtenerFuerza jugador)) (anguloTiro jugador))
+         )
         (else (interseccionAux jugadores bola))
-        )
-  )
+        ))
 
 (define (fuerzaBola bola)
-  (cadr bola))
+  (cond ((not (list? bola)) bola)
+        (else (cadr bola))))
 
 (define (anguloBola bola)
-  (caddr bola))
+  (cond ((number? bola) bola)
+        (else (caddr bola)))
+  )
 
 ;;(cambiarFuerzaBola (interseccion (car jugadores) (movimientoX jugadores step diagonal angulo)
-;;                                                                             (movimientoY jugadores step diagonal angulo) bola (append nuevosJugadores (cdr jugadores)))
+;;                 (movimientoY jugadores step diagonal angulo) bola (append nuevosJugadores (cdr jugadores)))
 ;;                                              )
 
 (define (verificaLimites bola)
@@ -193,8 +198,8 @@
          (begin
            ((draw-solid-ellipse window2) (make-posn (posX bola) (posY bola)) 20 20 "white")
            ((draw-ellipse window2) (make-posn (posX bola) (posY bola)) 20 20 "black")
-           ((draw-ellipse window2) (make-posn (+ (posX bola) (abs (- (fuerzaBola bola) 20)))
-                                              (+ (posY bola) (abs (- (fuerzaBola bola) 20))))
+           ((draw-ellipse window2) (make-posn (+ (posX bola) (/ (- 20 (fuerzaBola bola)) 2))
+                                              (+ (posY bola) (/ (- 20 (fuerzaBola bola)) 2)))
                                    (fuerzaBola bola) (fuerzaBola bola) "black")
            ))
         )
@@ -206,8 +211,34 @@
 ;;        ((equal? (car (cdddr jugador)) 3) (obtenerAngulo ))
 ;;        )
 ;;  )
+;; (define (mover_a_bola  jugador listaF ball)
 
-(define (moverJugadores jugadores step nuevosJugadores diagonal angulo bola)
+(define (remplazarDestino jugadores nuevos bola)
+  (cond ((null? jugadores) '())
+        ((equal? (obtenerEquipo (car jugadores)) "purple")
+         (append (cons (mover_a_bola_S (car jugadores) nuevos bola) '()) (cdr jugadores)))
+        (else
+         (append (cons (mover_a_bola (car jugadores) nuevos bola) '()) (cdr jugadores)))
+        )
+  )
+
+(define (obtenerResto jugadores)
+  (cond ((null? jugadores) '())
+        (else (cdr jugadores))
+        ))
+
+(define (estela-aux jugadores step nuevosJugadores diagonal angulo bola)
+  (estela jugadores 0
+          nuevosJugadores
+          (hipotenusa (getNextPlayer jugadores))
+          (obtenerAngulo (getNextPlayer jugadores))
+          (cambiarFuerzaBola (interseccion
+                              (getNextPlayer jugadores)
+                              (movimientoX jugadores step diagonal angulo)
+                              (movimientoY jugadores step diagonal angulo)
+                              bola (append nuevosJugadores (obtenerResto jugadores))))))
+
+(define (estela jugadores step nuevosJugadores diagonal angulo bola)
   (begin
     ;;(sleep 1)
     (cond ((null? jugadores)
@@ -218,58 +249,74 @@
                  (dibujarJugadores  nuevosJugadores 1)
                  (dibujarBola (interseccionAux nuevosJugadores bola))
                  (drawWindow)
-                 (moverJugadores '() 0 nuevosJugadores 0 0
-                                 (cambiarFuerzaBola (fuerzaBola (interseccionAux nuevosJugadores bola))
-                                                    ))))
-             (else nuevosJugadores)) )
+                 (estela '() 0 nuevosJugadores 0 0
+                                 (cambiarFuerzaBola (fuerzaBola (interseccionAux nuevosJugadores bola))))))
+             (else (list nuevosJugadores bola))))
         ((< diagonal step)
-         (moverJugadores (cdr jugadores) 0
-                         (cons (terminoMovimiento (car jugadores)) nuevosJugadores)
-                         (hipotenusa (getNextPlayer jugadores))
-                         (obtenerAngulo (getNextPlayer jugadores))
-                         (cambiarFuerzaBola (interseccion (car jugadores)
-                                                          (movimientoX jugadores step diagonal angulo)
-                                                          (movimientoY jugadores step diagonal angulo)
-                                                          bola (append nuevosJugadores (cdr jugadores)))
-                                              )))        
+         (estela-aux
+          (remplazarDestino (cdr jugadores) nuevosJugadores bola) 0
+          (cons (terminoMovimiento (car jugadores)) nuevosJugadores)
+          diagonal angulo bola))        
         (else
          (begin
            (dibujarCancha)
            ((draw-solid-ellipse window2) (make-posn (movimientoX jugadores step diagonal angulo)
                                                     (movimientoY jugadores step diagonal angulo))
-                                         30 30 "purple")
-           
+                                         30 30 (obtenerEquipo (car jugadores)))
            (dibujarJugadores (append nuevosJugadores (cdr jugadores)) 1)
-           (display bola) (newline) 
-           (dibujarBola (interseccion (car jugadores) (movimientoX jugadores step diagonal angulo)
+           (dibujarBola (interseccion (car jugadores)
+                                      (movimientoX jugadores step diagonal angulo)
                                       (movimientoY jugadores step diagonal angulo)
                                       bola (append nuevosJugadores (cdr jugadores))))
-           
            (drawWindow)
-           (moverJugadores jugadores (+ step 10) nuevosJugadores diagonal angulo
-                           (cambiarFuerzaBola (interseccion (car jugadores) (movimientoX jugadores step diagonal angulo)
+           (estela jugadores (+ step 18) nuevosJugadores diagonal angulo
+                           (cambiarFuerzaBola (interseccion (car jugadores)
+                                                            (movimientoX jugadores step diagonal angulo)
                                                             (movimientoY jugadores step diagonal angulo) bola
-                                                            (append nuevosJugadores (cdr jugadores)))
-                                              ))
-           ;;(display step)
-           ;;(display "    X: ")
-           ;;(display (movimientoX jugadores step diagonal angulo)) (newline)
-           ;;(display (movimientoY jugadores step diagonal angulo)) (newline)
-           ;;(newline)
-           ))
-        )
-    ))
+                                                            (append nuevosJugadores (cdr jugadores))))))))))
 
-(define (start)
+(define (startMatchAux players generaciones)
+  (startMatch
+   (seleccion-reproduccion-aux (mover players))
+   generaciones
+   (cadr players))
+  )
+
+(define (startMatch players generaciones bola)
   (begin
     (dibujarCancha)
     (escribirDatos '(1 0) 12)
+    (display "Generacion: ")
+    (display generaciones)
+    (newline)
     
-    (moverJugadores players 0 '() (hipotenusa (car players)) (obtenerAngulo (car players)) ball)
-    (escribirDatos '(1 1) 17)
+    (cond ((< generaciones 20)
+           (startMatchAux
+            (estela players 0 '() (hipotenusa (car players)) (obtenerAngulo (car players)) bola)
+            (+ generaciones 1)))
+          )
+    
+    
     (copy-viewport window2 window)
     ((clear-viewport window2))
-    ;;(dibujarJugadores '(((300 250) (800 250)) ((300 300) (450 300)) ((300 350) (350 350))) 1)
     ))
 
-(start)
+(define (makeOneList equipos)
+  (append (car equipos) (cadr equipos))
+  )
+
+(define tt (mover-aux (inicializacion1 '(4 4 2)) (inicializacion2 '(4 3 3)) firstBall))
+
+(define (CCCE2019 form1 form2 iteraciones)
+  (cond ((or (null? form1) (null? form2)) '())
+        (else
+         (begin
+           
+           
+           (startMatch (makeOneList tt) 1 firstBall)
+           ))
+  ))
+
+
+
+(CCCE2019 '(4 4 2) '(4 3 3) 20)
